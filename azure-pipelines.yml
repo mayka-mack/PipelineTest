@@ -19,8 +19,13 @@ steps:
 
 - script: |
     git config user.email pipeline@pipeline.com & git config user.name "Pipeline"
+  displayName: Set Git username and email for pipeline
   workingDirectory: $(System.DefaultWorkingDirectory)
 
 - script: |
+    versionNumber="$(git show -s --format=%s)"
     git checkout origin/production
+    echo "$versionNumber"
+    git merge --no-ff '$(build.sourceBranch)'
+  displayName: Commit incremented version
   workingDirectory: $(System.DefaultWorkingDirectory)
