@@ -4,17 +4,17 @@
 # https://aka.ms/yaml
 
 # Get true branch name -- cannot use Build.SourceBranchName due to / in the branch name
-name: $[ variables['branchName'] ]
-variables:
-  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/') }}:
-    branchName: $[ replace(variables['Build.SourceBranch'], 'refs/heads/', '') ]
-  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:
-    branchName: $[ replace(variables['System.PullRequest.SourceBranch'], 'refs/heads/', '') ]
+# name: $[ variables['branchName'] ]
+# variables:
+#   ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/') }}:
+#     branchName: $[ replace(variables['Build.SourceBranch'], 'refs/heads/', '') ]
+#   ${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:
+#     branchName: $[ replace(variables['System.PullRequest.SourceBranch'], 'refs/heads/', '') ]
 
-trigger:
-  branches:
-    include:
-    - 'release/*'
+trigger: none
+#   branches:
+#     include:
+#     - 'release/*'
 
 pool:
   vmImage: ubuntu-latest
@@ -28,83 +28,83 @@ steps:
 #     RemoveDotFiles: true
 #   condition: always()
 
-- checkout: self
-  fetchDepth: 0
-  fetchTags: true
-  persistCredentials: true
+# - checkout: self
+#   fetchDepth: 0
+#   fetchTags: true
+#   persistCredentials: true
 
-- script: |
-    versionNumber="$(git show -s --format=%s)"
+# - script: |
+#     versionNumber="$(git show -s --format=%s)"
 
-    echo "##[section]Setting Git username and email for pipeline"
+#     echo "##[section]Setting Git username and email for pipeline"
 
-    echo "##[command]git config --local user.email pipeline@pipeline.com"
-    git config --local user.email pipeline@pipeline.com
+#     echo "##[command]git config --local user.email pipeline@pipeline.com"
+#     git config --local user.email pipeline@pipeline.com
 
-    echo "##[command]git config --local user.name \"Pipeline\""
-    git config --local user.name "Pipeline"
+#     echo "##[command]git config --local user.name \"Pipeline\""
+#     git config --local user.name "Pipeline"
 
-    echo "##[section]Updating production branch"
+#     echo "##[section]Updating production branch"
 
-    echo "##[command]git checkout production"
-    git checkout production
+#     echo "##[command]git checkout production"
+#     git checkout production
 
-    echo "##[command]git merge --squash \"origin/$BRANCHNAME\""
-    git merge --squash "origin/$BRANCHNAME"
+#     echo "##[command]git merge --squash \"origin/$BRANCHNAME\""
+#     git merge --squash "origin/$BRANCHNAME"
 
-    CONFLICTS=$(git ls-files -u | wc -l)
-    if [ "$CONFLICTS" -gt 0 ] ; then
-      echo "There is a merge conflict. Aborting"
-      exit 1
-    fi
+#     CONFLICTS=$(git ls-files -u | wc -l)
+#     if [ "$CONFLICTS" -gt 0 ] ; then
+#       echo "There is a merge conflict. Aborting"
+#       exit 1
+#     fi
 
-    echo "##[section]Committing changes"
-    echo "##[command]git commit -m \"v$versionNumber\""
-    git commit -m "v$versionNumber"
+#     echo "##[section]Committing changes"
+#     echo "##[command]git commit -m \"v$versionNumber\""
+#     git commit -m "v$versionNumber"
 
-    echo "##[section]Tagging commit"
-    echo "##[command]git tag \"v$versionNumber\""
-    git tag "v$versionNumber"
+#     echo "##[section]Tagging commit"
+#     echo "##[command]git tag \"v$versionNumber\""
+#     git tag "v$versionNumber"
 
-    echo "##[section]Updating development branch"
+#     echo "##[section]Updating development branch"
 
-    echo "##[command]git checkout development"
-    git checkout development
+#     echo "##[command]git checkout development"
+#     git checkout development
 
-    echo "##[command]git merge --squash \"origin/$BRANCHNAME\""
-    git merge --squash "origin/$BRANCHNAME"
+#     echo "##[command]git merge --squash \"origin/$BRANCHNAME\""
+#     git merge --squash "origin/$BRANCHNAME"
 
-    CONFLICTS=$(git ls-files -u | wc -l)
-    if [ "$CONFLICTS" -gt 0 ] ; then
-      echo "There is a merge conflict. Aborting"
-      exit 1
-    fi
+#     CONFLICTS=$(git ls-files -u | wc -l)
+#     if [ "$CONFLICTS" -gt 0 ] ; then
+#       echo "There is a merge conflict. Aborting"
+#       exit 1
+#     fi
 
-    echo "##[section]Committing changes"
-    echo "##[command]git commit -m \"v$versionNumber\""
-    git commit -m "v$versionNumber"
+#     echo "##[section]Committing changes"
+#     echo "##[command]git commit -m \"v$versionNumber\""
+#     git commit -m "v$versionNumber"
 
-    echo "##[section]Pushing changes to origin"
+#     echo "##[section]Pushing changes to origin"
 
-    echo "##[command]git push --set-upstream origin development"
-    git push --set-upstream origin development
+#     echo "##[command]git push --set-upstream origin development"
+#     git push --set-upstream origin development
 
-    if [ $? -ne 0 ]; then
-      echo "Push to development failed. Aborting"
-      exit 1
-    fi
+#     if [ $? -ne 0 ]; then
+#       echo "Push to development failed. Aborting"
+#       exit 1
+#     fi
 
-    echo "##[command]git checkout production"
-    git checkout production
+#     echo "##[command]git checkout production"
+#     git checkout production
 
-    echo "##[command]push --set-upstream origin production"
-    git push --set-upstream origin production
+#     echo "##[command]push --set-upstream origin production"
+#     git push --set-upstream origin production
 
-    echo "##[command]push origin --tags"
-    git push origin --tags
+#     echo "##[command]push origin --tags"
+#     git push origin --tags
 
-    echo "##[section]Deleting branch origin/$BRANCHNAME"
-    echo "##[command]git push -d origin \"$BRANCHNAME\""
-    git push -d origin "$BRANCHNAME"
-  displayName: Bump version
-  workingDirectory: $(System.DefaultWorkingDirectory)
+#     echo "##[section]Deleting branch origin/$BRANCHNAME"
+#     echo "##[command]git push -d origin \"$BRANCHNAME\""
+#     git push -d origin "$BRANCHNAME"
+#   displayName: Bump version
+#   workingDirectory: $(System.DefaultWorkingDirectory)
