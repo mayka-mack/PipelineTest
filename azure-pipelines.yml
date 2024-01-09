@@ -34,14 +34,12 @@ steps:
   persistCredentials: true
 
 - script: |
-    echo "##[section]Setting Git username and email for pipeline"
-    git config user.email pipeline@pipeline.com & git config user.name "Pipeline"
     versionNumber="$(git show -s --format=%s)"
     echo "##[group]Updating production branch"
     git checkout production
     git merge --squash "origin/$BRANCHNAME"
     echo "##[section]Committing changes"
-    git commit -m "v$versionNumber"
+    git commit -m "v$versionNumber" --author="Pipeline <pipeline@pipeline.com"
     echo "##[section]Tagging commit"
     git tag "v$versionNumber"
     echo "##[endgroup]"
@@ -49,7 +47,7 @@ steps:
     git checkout development
     git merge --squash "origin/$BRANCHNAME"
     echo "##[section]Committing changes"
-    git commit -m "v$versionNumber"
+    git commit -m "v$versionNumber" --author="Pipeline <pipeline@pipeline.com"
     echo "##[endgroup]"
     echo "##[section]Pushing changes to origin"
     git push origin production
