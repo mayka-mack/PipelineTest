@@ -40,16 +40,16 @@ steps:
 
 - script: |
     versionNumber="$(git show -s --format=%s)"
-    echo -e "{BLUE}Updating production branch"
+    echo "##[command]Updating production branch"
     git checkout production
     git merge --squash "origin/$BRANCHNAME"
-    echo -e "{BLUE}Committing changes"
+    echo "##[command]Committing changes"
     git commit -m "v$versionNumber"
-    echo -e "{BLUE}Tagging commit"
+    echo "##[command]Tagging commit"
     git tag "v$versionNumber"
-    echo -e "{BLUE}Pushing changes to origin"
+    echo "##[command]Pushing changes to origin"
     git push origin production
-    echo -e "{BLUE}Deleting branch $BRANCHNAME"
+    echo "##[command]Deleting branch $BRANCHNAME"
     git push -d origin "$BRANCHNAME"
   displayName: Commit incremented version
   workingDirectory: $(System.DefaultWorkingDirectory)
