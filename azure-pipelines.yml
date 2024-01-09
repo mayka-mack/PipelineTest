@@ -32,9 +32,10 @@ steps:
 
 - script: |
     versionNumber="$(git show -s --format=%s)"
-    echo "$(git branch -a)"
-    git checkout production
+    git checkout origin/production
     git merge --no-ff "origin/$BRANCHNAME"
+    git tag -a "v$versionNumber"
+    git push origin production
     git push -d origin "$BRANCHNAME"
   displayName: Commit incremented version
   workingDirectory: $(System.DefaultWorkingDirectory)
