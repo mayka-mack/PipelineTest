@@ -47,7 +47,7 @@ steps:
     echo "##[section]Tagging commit"
     git tag "v$versionNumber"
     echo "##[section]Pushing changes to origin/production"
-    git push --set-upstream origin production
+    git push --set-upstream origin production --tags
     echo "##[section]Updating development branch"
     git checkout development
     git merge --squash "origin/$BRANCHNAME"
