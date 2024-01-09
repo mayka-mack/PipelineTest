@@ -21,11 +21,11 @@ steps:
 
 - script: |
     versionNumber="$(git show -s --format=%s)"
-    git checkout production
+    git checkout origin/production
     git merge --no-ff '$(build.sourceBranch)'
     git push --set-upstream origin production
     git tag -a "v$versionNumber"
-    git checkout development
+    git checkout origin/development
     git merge --no-ff '$(build.sourceBranch)'
     git push --set-upstream origin development
     git branch -D '$(build.sourceBranch)'
