@@ -39,6 +39,7 @@ steps:
     echo "##[section]Setting Git username and email for pipeline"
     git config --local user.email pipeline@pipeline.com
     git config --local user.name "Pipeline"
+    ##[command]git status
 
     echo "##[section]Updating production branch"
     git checkout production
