@@ -46,7 +46,7 @@ steps:
 
     echo "##[section]Updating production branch"
 
-    echo "##[command]checkout production"
+    echo "##[command]git checkout production"
     git checkout production
 
     echo "##[command]git merge --squash \"origin/$BRANCHNAME\""
@@ -68,7 +68,7 @@ steps:
 
     echo "##[section]Updating development branch"
 
-    echo "##[command]checkout production"
+    echo "##[command]git checkout development"
     git checkout development
 
     echo "##[command]git merge --squash \"origin/$BRANCHNAME\""
@@ -85,6 +85,7 @@ steps:
     git commit -m "v$versionNumber"
 
     echo "##[section]Pushing changes to origin"
+
     echo "##[command]git push --set-upstream origin development"
     git push --set-upstream origin development
 
