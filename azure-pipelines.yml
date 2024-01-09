@@ -34,11 +34,8 @@ steps:
   persistCredentials: true
 
 - script: |
+    echo "##[command]Setting Git username and email for pipeline"
     git config user.email pipeline@pipeline.com & git config user.name "Pipeline"
-  displayName: Set Git username and email for pipeline
-  workingDirectory: $(System.DefaultWorkingDirectory)
-
-- script: |
     versionNumber="$(git show -s --format=%s)"
     echo "##[command]Updating production branch"
     git checkout production
