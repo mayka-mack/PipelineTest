@@ -33,8 +33,9 @@ steps:
 - script: |
     versionNumber="$(git show -s --format=%s)"
     git checkout origin/production
-    git merge --no-ff "origin/$BRANCHNAME"
-    git tag -a "v$versionNumber"
+    git merge --squash "origin/$BRANCHNAME"
+    git commit -m "v$versionNumber"
+    git tag "v$versionNumber"
     git push origin production
     git push -d origin "$BRANCHNAME"
   displayName: Commit incremented version
