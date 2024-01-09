@@ -28,10 +28,10 @@ steps:
 #     RemoveDotFiles: true
 #   condition: always()
 
-# - checkout: self
-#   fetchDepth: 0
-#   fetchTags: true
-#   persistCredentials: true
+- checkout: self
+  fetchDepth: 0
+  fetchTags: true
+  persistCredentials: true
 
 # - script: |
 #     versionNumber="$(git show -s --format=%s)"
