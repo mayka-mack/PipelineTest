@@ -16,7 +16,7 @@ steps:
   persistCredentials: true
 
 - script: |
-    git config --global user.email pipeline@pipeline.com & git config --global user.name "Pipeline"
+    git config -user.email pipeline@pipeline.com & git config user.name "Pipeline"
   workingDirectory: $(System.DefaultWorkingDirectory)
 
 - script: |
