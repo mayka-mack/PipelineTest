@@ -1,0 +1,33 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  branches:
+    include:
+    - 'release/*'
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- checkout: self
+  persistCredentials: true
+
+- script: |
+    git config --global user.email pipeline@pipeline.com & git config --global user.name "Pipeline"
+  workingDirectory: $(System.DefaultWorkingDirectory)
+
+- script: |
+    versionNumber="$(git show -s --format=%s)"
+    git checkout production
+    git merge --no-ff '$(build.sourceBranch)'
+    git push --set-upstream origin production
+    git tag -a "v$versionNumber"
+    git checkout development
+    git merge --no-ff '$(build.sourceBranch)'
+    git push --set-upstream origin development
+    git branch -D '$(build.sourceBranch)'
+  displayName: Commit incremented version
+  workingDirectory: $(System.DefaultWorkingDirectory)
