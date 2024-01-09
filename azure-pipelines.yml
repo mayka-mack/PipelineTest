@@ -37,12 +37,19 @@ steps:
     versionNumber="$(git show -s --format=%s)"
 
     echo "##[section]Setting Git username and email for pipeline"
+
+    echo "##[command]git config --local user.email pipeline@pipeline.com"
     git config --local user.email pipeline@pipeline.com
+
+    echo "##[command]git config --local user.name \"Pipeline\""
     git config --local user.name "Pipeline"
-    ##[command]git status
 
     echo "##[section]Updating production branch"
+
+    echo "##[command]checkout production"
     git checkout production
+
+    echo "##[command]git merge --squash \"origin/$BRANCHNAME\""
     git merge --squash "origin/$BRANCHNAME"
 
     CONFLICTS=$(git ls-files -u | wc -l)
@@ -52,13 +59,19 @@ steps:
     fi
 
     echo "##[section]Committing changes"
+    echo "##[command]git commit -m \"v$versionNumber\""
     git commit -m "v$versionNumber"
 
     echo "##[section]Tagging commit"
+    echo "##[command]git tag \"v$versionNumber\""
     git tag "v$versionNumber"
 
     echo "##[section]Updating development branch"
+
+    echo "##[command]checkout production"
     git checkout development
+
+    echo "##[command]git merge --squash \"origin/$BRANCHNAME\""
     git merge --squash "origin/$BRANCHNAME"
 
     CONFLICTS=$(git ls-files -u | wc -l)
@@ -68,19 +81,29 @@ steps:
     fi
 
     echo "##[section]Committing changes"
+    echo "##[command]git commit -m \"v$versionNumber\""
     git commit -m "v$versionNumber"
 
     echo "##[section]Pushing changes to origin"
+    echo "##[command]git push --set-upstream origin development"
     git push --set-upstream origin development
+
     if [ $? -ne 0 ]; then
       echo "Push to development failed. Aborting"
       exit 1
     fi
-    gi checkout production
-    git push --set-upstream origin production --tags
+
+    echo "##[command]git checkout production"
+    git checkout production
+
+    echo "##[command]push --set-upstream origin production"
+    git push --set-upstream origin production
+
+    echo "##[command]push origin --tags"
     git push origin --tags
 
     echo "##[section]Deleting branch $BRANCHNAME"
+    echo "##[command]git push -d origin \"$BRANCHNAME\""
     git push -d origin "$BRANCHNAME"
   displayName: Bump version
   workingDirectory: $(System.DefaultWorkingDirectory)
