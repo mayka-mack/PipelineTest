@@ -46,16 +46,16 @@ steps:
     git commit -m "v$versionNumber"
     echo "##[section]Tagging commit"
     git tag "v$versionNumber"
+    echo "##[section]Pushing changes to origin/production"
+    git push --set-upstream origin production
     echo "##[section]Updating development branch"
-    echo "##[section]Pushing changes to origin"
-    git push origin production
     git checkout development
     git merge --squash "origin/$BRANCHNAME"
     echo "##[section]Committing changes"
     git commit -m "v$versionNumber"
-    echo "##[section]Pushing changes to origin"
-    git push origin development
+    echo "##[section]Pushing changes to origin/development"
+    git push --set-upstream  origin development
     echo "##[section]Deleting branch $BRANCHNAME"
     git push -d origin "$BRANCHNAME"
-  displayName: Commit incremented version
+  displayName: Bump version
   workingDirectory: $(System.DefaultWorkingDirectory)
