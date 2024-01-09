@@ -20,14 +20,5 @@ steps:
   workingDirectory: $(System.DefaultWorkingDirectory)
 
 - script: |
-    versionNumber="$(git show -s --format=%s)"
     git checkout origin/production
-    git merge --no-ff '$(build.sourceBranch)'
-    git push --set-upstream origin production
-    git tag -a "v$versionNumber"
-    git checkout origin/development
-    git merge --no-ff '$(build.sourceBranch)'
-    git push --set-upstream origin development
-    git branch -D '$(build.sourceBranch)'
-  displayName: Commit incremented version
   workingDirectory: $(System.DefaultWorkingDirectory)
