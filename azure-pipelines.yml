@@ -13,6 +13,8 @@ pool:
 
 steps:
 - checkout: self
+  fetchDepth: 0
+  fetchTags: true
   persistCredentials: true
 
 - script: |
