@@ -34,19 +34,27 @@ steps:
   persistCredentials: true
 
 - script: |
-    echo "##[command]Setting Git username and email for pipeline"
+    echo "##[section]Setting Git username and email for pipeline"
     git config user.email pipeline@pipeline.com & git config user.name "Pipeline"
     versionNumber="$(git show -s --format=%s)"
-    echo "##[command]Updating production branch"
+    echo "##[group]Updating production branch"
     git checkout production
     git merge --squash "origin/$BRANCHNAME"
-    echo "##[command]Committing changes"
+    echo "##[section]Committing changes"
     git commit -m "v$versionNumber"
-    echo "##[command]Tagging commit"
+    echo "##[section]Tagging commit"
     git tag "v$versionNumber"
-    echo "##[command]Pushing changes to origin"
+    echo "##[endgroup]"
+    echo "##[group]Updating development branch"
+    git checkout development
+    git merge --squash "origin/$BRANCHNAME"
+    echo "##[section]Committing changes"
+    git commit -m "v$versionNumber"
+    echo "##[endgroup]"
+    echo "##[section]Pushing changes to origin"
     git push origin production
-    echo "##[command]Deleting branch $BRANCHNAME"
+    git push origin development
+    echo "##[section]Deleting branch $BRANCHNAME"
     git push -d origin "$BRANCHNAME"
   displayName: Commit incremented version
   workingDirectory: $(System.DefaultWorkingDirectory)
