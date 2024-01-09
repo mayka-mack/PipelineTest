@@ -3,7 +3,7 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
-# Get true branch name -- cannot rely on Build.SourceBranchName
+# Get true branch name -- cannot use Build.SourceBranchName due to / in the branch name
 name: $[ variables['branchName'] ]
 variables:
   ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/') }}:
@@ -33,6 +33,6 @@ steps:
 - script: |
     versionNumber="$(git show -s --format=%s)"
     git checkout production
-    git merge --no-ff "$BUILD_SOURCEBRANCHNAME"
+    git merge --no-ff "$BRANCHNAME"
   displayName: Commit incremented version
   workingDirectory: $(System.DefaultWorkingDirectory)
