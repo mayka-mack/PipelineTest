@@ -103,7 +103,7 @@ steps:
     echo "##[command]push origin --tags"
     git push origin --tags
 
-    echo "##[section]Deleting branch $BRANCHNAME"
+    echo "##[section]Deleting branch origin/$BRANCHNAME"
     echo "##[command]git push -d origin \"$BRANCHNAME\""
     git push -d origin "$BRANCHNAME"
   displayName: Bump version
