@@ -34,6 +34,7 @@ steps:
     versionNumber="$(git show -s --format=%s)"
     echo "Updating production branch"
     git checkout production
+    git merge --squash development
     git merge --squash "origin/$BRANCHNAME"
     echo "Committing changes"
     git commit -m "v$versionNumber"
