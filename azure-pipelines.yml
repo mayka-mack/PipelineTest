@@ -24,8 +24,7 @@ steps:
 
 - script: |
     versionNumber="$(git show -s --format=%s)"
-    git checkout origin/production
-    echo "$versionNumber"
-    git merge --no-ff '$(build.sourceBranch)'
+    git checkout production
+    git merge --no-ff $BUILD_SOURCEBRANCH'
   displayName: Commit incremented version
   workingDirectory: $(System.DefaultWorkingDirectory)
