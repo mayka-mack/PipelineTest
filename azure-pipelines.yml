@@ -47,8 +47,8 @@ steps:
 
     CONFLICTS=$(git ls-files -u | wc -l)
     if [ "$CONFLICTS" -gt 0 ] ; then
-    echo "There is a merge conflict. Aborting"
-    exit 1
+      echo "There is a merge conflict. Aborting"
+      exit 1
     fi
 
     echo "##[section]Committing changes"
@@ -63,15 +63,19 @@ steps:
 
     CONFLICTS=$(git ls-files -u | wc -l)
     if [ "$CONFLICTS" -gt 0 ] ; then
-    echo "There is a merge conflict. Aborting"
-    exit 1
+      echo "There is a merge conflict. Aborting"
+      exit 1
     fi
 
     echo "##[section]Committing changes"
     git commit -m "v$versionNumber"
 
     echo "##[section]Pushing changes to origin"
-    git push --set-upstream  origin development
+    git push --set-upstream origin development
+    if [ $? -ne 0 ]; then
+      echo "Push to development failed. Aborting"
+      exit 1
+    fi
     gi checkout production
     git push --set-upstream origin production --tags
     git push origin --tags
