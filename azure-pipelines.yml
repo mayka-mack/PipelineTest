@@ -112,8 +112,8 @@ jobs:
       # should only populate the variable if there are issues, which will give the ability to check
       # if anything failed with a warning and abort the formatter
 
-      echo "##[command]errors=$(dotnet csharpier . --write-stdout --loglevel Warning 2>&1)"
-      errors=$(dotnet csharpier . --write-stdout --loglevel Warning 2>&1)
+      echo "##[command]errors=\"\$(dotnet csharpier . --write-stdout --loglevel Warning 2>&1)\""
+      errors="$(dotnet csharpier . --write-stdout --loglevel Warning 2>&1)""
 
       if [ $? -ne 0 ] || [ -n "$errors" ]; then
           echo "##[command]echo \"$errors\""
