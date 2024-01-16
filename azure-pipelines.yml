@@ -46,7 +46,7 @@ stages:
 
 - stage: PullRequest
   displayName: 'Run checks for pull requests'
-  condition: eq(variables['Build.Reason'], 'PullRequest')
+  # condition: eq(variables['Build.Reason'], 'PullRequest')
   jobs:
   - job: PullRequest
     displayName: 'Pull request job'
@@ -56,13 +56,15 @@ stages:
       displayName: Restore dotnet tools
       inputs:
         command: 'custom'
-        custom: 'tool restore'
+        custom: 'tool'
+        arguments: 'restore'
 
     - task: DotNetCoreCLI@2
       displayName: Check formatting
       inputs:
         command: 'custom'
-        custom: 'csharpier --check .'
+        custom: 'csharpier'
+        arguments: '--check .'
 
     # - script: |
     #     echo "$BUILD_REASON"
