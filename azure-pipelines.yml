@@ -40,7 +40,10 @@ steps:
   fetchTags: true
   persistCredentials: true
 
-- script: echo "$BUILDREASON"
+- script: |
+    echo "$BUILDREASON"
+  displayName: Get build reason
+  workingDirectory: $(System.DefaultWorkingDirectory)
 
 # - script: |
 #     versionNumber="$(git show -s --format=%s)"
