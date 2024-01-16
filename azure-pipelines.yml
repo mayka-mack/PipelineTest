@@ -1,4 +1,4 @@
-  # Starter pipeline
+# Starter pipeline
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
@@ -31,13 +31,14 @@ pool:
 jobs:
 - job: PullRequest
   displayName: 'Run PR Checks'
-  condition: eq(variables['Build.Reason'], 'PullRequest')
+  #condition: eq(variables['Build.Reason'], 'PullRequest')
   steps:
   - checkout: self
     fetchDepth: 0
     fetchTags: true
     persistCredentials: true
 
+  # Must set Git username and password to commit any changes later
   - script: |
       echo "##[section]Setting Git username and email for pipeline"
       echo "##[command]git config --local user.email \"$GITPIPELINEEMAIL\""
@@ -47,6 +48,7 @@ jobs:
     displayName: Set Git username/email for pipeline
     workingDirectory: $(System.DefaultWorkingDirectory)
 
+  # Must restore formatting tools
   - task: DotNetCoreCLI@2
     displayName: Restore dotnet tools
     inputs:
@@ -54,7 +56,33 @@ jobs:
       custom: 'tool'
       arguments: 'restore'
 
+  # Running the formatters should happen *only* if last commit was not by the pipeline for
+  # formatting updates; this should hopefully prevent recursive commits should things go awry
   - script: |
+      echo "##[section]Checking last commit"
+
+      echo "##[command]lastCommit=\"\$(git show -s --format='%ae - %s')\""
+      lastCommit="$(git show -s --format='%ae - %s')"
+
+      echo "##[section]Setting \"wasFormatted\" pipeline variable"
+
+      # To print out the ##vso command without interpolating it,
+      # storing the command in a variable first
+      commandString="vso[task.setvariable variable=wasFormatted;]"
+
+      if [ lastCommit == "$GITPIPELINEEMAIL - $GITFORMATCOMMITMESSAGE" ]; then
+          echo "##[command]##${commandString}true"
+          echo "##vso[task.setvariable variable=wasFormatted;]true"
+      else
+          command="vso[task.setvariable variable=wasFormatted;]false"
+          echo "##[command]##${commandString}false"
+          echo "##vso[task.setvariable variable=wasFormatted;]false"
+      fi
+    displayName: Check if last commit came from formatter
+    workingDirectory: $(System.DefaultWorkingDirectory)
+
+  - script: |
+      echo "$WASFORMATTED"
       echo "##[section]Running formatting"
       echo "##[command]dotnet csharpier ."
       dotnet csharpier .
@@ -73,14 +101,10 @@ jobs:
       fi
 
       if [ -n "$(git status --porcelain)" ]; then
-        lastCommit="$(git show -s --format='%ae - %s')"
-
-        if [ lastCommit -eq "$GITPIPELINEEMAIL - $GITFORMATCOMMITMESSAGE" ]; then
-          echo "Formatter stuck in loop; aborting."
-          exit 1
-        fi
-
         echo "Committing formatting changes."
+        
+        echo "##[command]git add -A"
+        git add -A
 
         echo "##[command]git commit -m \"$GITFORMATCOMMITMESSAGE\""
         git commit -m "$GITFORMATCOMMITMESSAGE"
@@ -94,6 +118,7 @@ jobs:
         fi
       fi
     displayName: Run formatting
+    condition: eq(variables.wasFormatted, false)
     workingDirectory: $(System.DefaultWorkingDirectory)
 
 # - script: |
