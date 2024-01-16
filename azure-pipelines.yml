@@ -107,13 +107,17 @@ jobs:
   # formatting updates; should things go awry, this should hopefully prevent recursive commits
   - script: |
       echo "##[section]Running formatting"
-      echo "##[command]dotnet csharpier ."
-      dotnet csharpier .
+
+      echo "##[command]errors=$(dotnet csharpier . --write-stdout --loglevel Warning 2>&1)"
+      errors=$(dotnet csharpier . --write-stdout --loglevel Warning 2>&1)
 
       if [ $? -ne 0 ]; then
           echo "CSharpier formatting failed; aborting."
           exit 1
       fi
+
+      echo "##[command]echo \"$errors\""
+      echo "$errors"
 
       echo "##[command]dotnet xstyler --recursive --directory . --config ./Settings.XamlStyler"
       dotnet xstyler --recursive --directory . --config ./Settings.XamlStyler
