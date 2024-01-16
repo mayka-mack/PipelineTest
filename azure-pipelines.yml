@@ -26,24 +26,49 @@ pr:
 pool:
   vmImage: ubuntu-latest
 
-steps:
-# - task: DeleteFiles@1
-#   displayName: 'Clean workspace'
-#   inputs:
-#     SourceFolder: '$(Pipeline.Workspace)'
-#     Contents: '*/**'
-#     RemoveDotFiles: true
-#   condition: always()
+stages:
+- stage: 'Setup'
+  jobs:
+  - job: 'Setup'
+    steps:
+    # - task: DeleteFiles@1
+    #   displayName: 'Clean workspace'
+    #   inputs:
+    #     SourceFolder: '$(Pipeline.Workspace)'
+    #     Contents: '*/**'
+    #     RemoveDotFiles: true
+    #   condition: always()
 
-- checkout: self
-  fetchDepth: 0
-  fetchTags: true
-  persistCredentials: true
+    - checkout: self
+      fetchDepth: 0
+      fetchTags: true
+      persistCredentials: true
 
-- script: |
-    echo "$BUILD_REASON"
-  displayName: Get build reason
-  workingDirectory: $(System.DefaultWorkingDirectory)
+- stage: PullRequest
+  displayName: 'Run checks for pull requests'
+  condition: eq(variables['Build.Reason'], 'PullRequest')
+  jobs:
+  - job: PullRequest
+    displayName: 'Pull request job'
+
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: Restore dotnet tools
+      inputs:
+        command: 'custom'
+        custom: 'tool restore'
+
+    - task: DotNetCoreCLI@2
+      displayName: Check formatting
+      inputs:
+        command: 'custom'
+        custom: 'csharpier --check .'
+
+    # - script: |
+    #     echo "$BUILD_REASON"
+    #   displayName: Check formatting on pull request
+    #   workingDirectory: $(System.DefaultWorkingDirectory)
+
 
 # - script: |
 #     versionNumber="$(git show -s --format=%s)"
