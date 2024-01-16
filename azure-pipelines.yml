@@ -4,8 +4,8 @@
 # https://aka.ms/yaml
 
 variables:
-  gitPipelineUser: 'Pipeline'
-  gitPipelineEmail: 'pipeline@pipeline.com'
+  gitPipelineUser: 'Azure Pipeline'
+  gitPipelineEmail: 'pipeline@azure.com'
   gitFormatCommitMessage: 'Format files'
   # Get true branch name -- cannot use Build.SourceBranchName due to / in the branch name
   ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/') }}:
@@ -13,10 +13,10 @@ variables:
   ${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:
     branchName: $[ replace(variables['System.PullRequest.SourceBranch'], 'refs/heads/', '') ]
 
-trigger: none
-#   branches:
-#     include:
-#     - 'release/*'
+trigger:
+  branches:
+    include:
+    - 'release/*'
 
 pr:
   branches:
@@ -31,7 +31,7 @@ pool:
 jobs:
 - job: PullRequest
   displayName: 'Run PR Checks'
-  #condition: eq(variables['Build.Reason'], 'PullRequest')
+  condition: eq(variables['Build.Reason'], 'PullRequest')
   steps:
   - checkout: self
     fetchDepth: 0
@@ -56,8 +56,6 @@ jobs:
       custom: 'tool'
       arguments: 'restore'
 
-  # Running the formatters should happen *only* if last commit was not by the pipeline for
-  # formatting updates; this should hopefully prevent recursive commits should things go awry
   - script: |
       echo "##[section]Checking last commit"
 
@@ -76,8 +74,10 @@ jobs:
     displayName: Check if last commit came from formatter
     workingDirectory: $(System.DefaultWorkingDirectory)
 
+  # Running the formatters will happen *only* if the "wasFormatted" variable got set to false
+  # in the previous step, meaning the last commit was *not* made by the pipeline for submitting
+  # formatting updates; should things go awry, this should hopefully prevent recursive commits
   - script: |
-      echo "$WASFORMATTED"
       echo "##[section]Running formatting"
       echo "##[command]dotnet csharpier ."
       dotnet csharpier .
