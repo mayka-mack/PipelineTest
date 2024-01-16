@@ -102,8 +102,6 @@ jobs:
   # in the previous step, meaning the last commit was *not* made by the pipeline for submitting
   # formatting updates; should things go awry, this should hopefully prevent recursive commits
   - script: |
-      echo "PRINT 1"
-      git show -s
       echo "##[section]Running formatting"
       echo "##[command]dotnet csharpier ."
       dotnet csharpier .
@@ -127,13 +125,9 @@ jobs:
           echo "##[command]git add -A"
           git add -A
 
-          echo "PRINT 2"
-          git show -s
           echo "##[command]git commit -m \"$GITFORMATCOMMITMESSAGE\""
           git commit -m "$GITFORMATCOMMITMESSAGE"
 
-          echo "PRINT 3"
-          git show -s
           echo "##[command]git push origin HEAD:\"$BRANCHNAME\""
           git push origin HEAD:"$BRANCHNAME"
 
