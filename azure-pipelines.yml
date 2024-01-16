@@ -116,6 +116,7 @@ jobs:
       errors="$(dotnet csharpier . --write-stdout --loglevel Warning 2>&1)"
 
       if [ $? -ne 0 ] || [ -n "$errors" ]; then
+          echo "PRINT 1"
           echo "##[command]echo \"$errors\""
           echo "$errors"
           echo "##[error]CSharpier formatting failed; aborting."
