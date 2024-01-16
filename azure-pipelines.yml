@@ -28,8 +28,10 @@ pool:
 
 stages:
 - stage: 'Setup'
+  displayName: 'Pipeline Setup'
   jobs:
   - job: 'Setup'
+    displayName: 'Setup job'
     steps:
     # - task: DeleteFiles@1
     #   displayName: 'Clean workspace'
@@ -45,11 +47,11 @@ stages:
       persistCredentials: true
 
 - stage: PullRequest
-  displayName: 'Run checks for pull requests'
+  displayName: 'Run PR checks'
   # condition: eq(variables['Build.Reason'], 'PullRequest')
   jobs:
   - job: PullRequest
-    displayName: 'Pull request job'
+    displayName: 'PR job'
 
     steps:
     - task: DotNetCoreCLI@2
