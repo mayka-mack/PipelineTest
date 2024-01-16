@@ -85,8 +85,8 @@ jobs:
         echo "##[command]git commit -m \"$GITFORMATCOMMITMESSAGE\""
         git commit -m "$GITFORMATCOMMITMESSAGE"
 
-        echo "##[command]git push"
-        git push
+        echo "##[command]git push origin HEAD:\"$BRANCHNAME\""
+        git push origin HEAD:"$BRANCHNAME"
 
         if [ $? -ne 0 ]; then
           echo "Pushing formatting changes to remote failed; aborting."
