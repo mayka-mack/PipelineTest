@@ -75,7 +75,7 @@ jobs:
           git checkout "$lastCommitHash"
 
           if [ $? -ne 0 ]; then
-              echo "Checkout failed; aborting."
+              echo "##[error]Checkout failed; aborting."
               exit 1
           fi
       else
@@ -108,22 +108,25 @@ jobs:
   - script: |
       echo "##[section]Running formatting"
 
+      # Storing results of CSharpier formatting to an errors variable with a log level of Warning
+      # should only populate the variable if there are issues, which will give the ability to check
+      # if anything failed with a warning and abort the formatter
+
       echo "##[command]errors=$(dotnet csharpier . --write-stdout --loglevel Warning 2>&1)"
       errors=$(dotnet csharpier . --write-stdout --loglevel Warning 2>&1)
 
-      if [ $? -ne 0 ]; then
-          echo "CSharpier formatting failed; aborting."
+      if [ $? -ne 0 ] || [ -n "$errors" ]; then
+          echo "##[command]echo \"$errors\""
+          echo "$errors"
+          echo "##[error]CSharpier formatting failed; aborting."
           exit 1
       fi
-
-      echo "##[command]echo \"$errors\""
-      echo "$errors"
 
       echo "##[command]dotnet xstyler --recursive --directory . --config ./Settings.XamlStyler"
       dotnet xstyler --recursive --directory . --config ./Settings.XamlStyler
 
       if [ $? -ne 0 ]; then
-          echo "Xaml Styler formatting failed; aborting."
+          echo "##[error]Xaml Styler formatting failed; aborting."
           exit 1
       fi
 
@@ -140,7 +143,7 @@ jobs:
           git push origin HEAD:"$BRANCHNAME"
 
           if [ $? -ne 0 ]; then
-              echo "Pushing formatting changes to remote failed; aborting."
+              echo "##[error]Pushing formatting changes to remote failed; aborting."
               exit 1
           fi
       fi
