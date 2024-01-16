@@ -117,6 +117,7 @@ jobs:
 
       if [ $? -ne 0 ] || [ -n "$errors" ]; then
           echo "PRINT 1"
+          dotnet csharpier --version
           echo "##[command]echo \"$errors\""
           echo "$errors"
           echo "##[error]CSharpier formatting failed; aborting."
