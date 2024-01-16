@@ -1,4 +1,4 @@
-# Starter pipeline
+  # Starter pipeline
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
@@ -29,8 +29,9 @@ pool:
   vmImage: ubuntu-latest
 
 jobs:
-- job: Setup
-  displayName: 'Initial Setup'
+- job: PullRequest
+  displayName: 'Run PR Checks'
+  condition: eq(variables['Build.Reason'], 'PullRequest')
   steps:
   - checkout: self
     fetchDepth: 0
@@ -46,19 +47,13 @@ jobs:
     displayName: Set Git username/email for pipeline
     workingDirectory: $(System.DefaultWorkingDirectory)
 
-- job: PullRequest
-  displayName: 'Run PR Checks'
-  dependsOn: Setup
-  condition: eq(variables['Build.Reason'], 'PullRequest')
-
-  steps:
   - task: DotNetCoreCLI@2
     displayName: Restore dotnet tools
     inputs:
       command: 'custom'
       custom: 'tool'
       arguments: 'restore'
-  
+
   - script: |
       echo "##[section]Running formatting"
       echo "##[command]dotnet csharpier ."
