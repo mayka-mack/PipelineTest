@@ -3,9 +3,11 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
-# Get true branch name -- cannot use Build.SourceBranchName due to / in the branch name
-name: $[ variables['branchName'] ]
 variables:
+  gitPipelineUser: 'Pipeline'
+  gitPipelineEmail: 'pipeline@pipeline.com'
+  gitFormatCommitMessage: 'Format files'
+  # Get true branch name -- cannot use Build.SourceBranchName due to / in the branch name
   ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/') }}:
     branchName: $[ replace(variables['Build.SourceBranch'], 'refs/heads/', '') ]
   ${{ if startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:
@@ -26,76 +28,78 @@ pr:
 pool:
   vmImage: ubuntu-latest
 
-stages:
-- stage: 'Setup'
-  displayName: 'Pipeline Setup'
-  jobs:
-  - job: 'Setup'
-    displayName: 'Setup job'
-    steps:
-    # - task: DeleteFiles@1
-    #   displayName: 'Clean workspace'
-    #   inputs:
-    #     SourceFolder: '$(Pipeline.Workspace)'
-    #     Contents: '*/**'
-    #     RemoveDotFiles: true
-    #   condition: always()
+jobs:
+- job: Setup
+  displayName: 'Initial Setup'
+  steps:
+  - checkout: self
+    fetchDepth: 0
+    fetchTags: true
+    persistCredentials: true
 
-    - checkout: self
-      fetchDepth: 0
-      fetchTags: true
-      persistCredentials: true
+  - script: |
+      echo "##[section]Setting Git username and email for pipeline"
+      echo "##[command]git config --local user.email \"$GITPIPELINEEMAIL\""
+      git config --local user.email "$GITPIPELINEEMAIL"
+      echo "##[command]git config --local user.name \"$GITPIPELINEUSER\""
+      git config --local user.name "$GITPIPELINEUSER"
+    displayName: Set Git username/email for pipeline
+    workingDirectory: $(System.DefaultWorkingDirectory)
 
-    - script: |
-        echo "##[section]Setting Git username and email for pipeline"
-        echo "##[command]git config --local user.email pipeline@pipeline.com"
-        git config --local user.email pipeline@pipeline.com
-        echo "##[command]git config --local user.name \"Pipeline\""
-        git config --local user.name "Pipeline"
-      displayName: Set Git username/email for pipeline
-      workingDirectory: $(System.DefaultWorkingDirectory)
-
-- stage: PullRequest
+- job: PullRequest
   displayName: 'Run PR Checks'
+  dependsOn: Setup
   condition: eq(variables['Build.Reason'], 'PullRequest')
-  jobs:
-  - job: PullRequest
-    displayName: 'PR job'
 
-    steps:
-    - task: DotNetCoreCLI@2
-      displayName: Restore dotnet tools
-      inputs:
-        command: 'custom'
-        custom: 'tool'
-        arguments: 'restore'
-    
-    - script: |
-        echo "##[section]Running CSharpier formatting"
-        echo "##[command]dotnet csharpier ."
-        dotnet csharpier .
+  steps:
+  - task: DotNetCoreCLI@2
+    displayName: Restore dotnet tools
+    inputs:
+      command: 'custom'
+      custom: 'tool'
+      arguments: 'restore'
+  
+  - script: |
+      echo "##[section]Running formatting"
+      echo "##[command]dotnet csharpier ."
+      dotnet csharpier .
 
-        if [ $? -ne 0 ]; then
-          echo "Formatting failed; aborting."
+      if [ $? -ne 0 ]; then
+        echo "CSharpier formatting failed; aborting."
+        exit 1
+      fi
+
+      echo "##[command]dotnet xstyler --recursive --directory . --config ./Settings.XamlStyler"
+      dotnet xstyler --recursive --directory . --config ./Settings.XamlStyler
+
+      if [ $? -ne 0 ]; then
+        echo "Xaml Styler formatting failed; aborting."
+        exit 1
+      fi
+
+      if [ -n "$(git status --porcelain)" ]; then
+        lastCommit="$(git show -s --format='%ae - %s')"
+
+        if [ lastCommit -eq "$GITPIPELINEEMAIL - $GITFORMATCOMMITMESSAGE" ]; then
+          echo "Formatter stuck in loop; aborting."
           exit 1
         fi
 
-        if [ -n "$(git status --porcelain)" ]; then
-          echo "One or more files were formatted by CSharpier; committing changes."
+        echo "Committing formatting changes."
 
-          echo "##[command]git commit -m \"Format files\""
-          git commit -m "Format files"
+        echo "##[command]git commit -m \"$GITFORMATCOMMITMESSAGE\""
+        git commit -m "$GITFORMATCOMMITMESSAGE"
 
-          echo "##[command]git push -set-upstream origin \"$BRANCHNAME\""
-          git push -set-upstream origin "$BRANCHNAME"
+        echo "##[command]git push -set-upstream origin \"$BRANCHNAME\""
+        git push -set-upstream origin "$BRANCHNAME"
 
-          if [ $? -ne 0 ]; then
-            echo "Pushing formatting changes to remote failed; aborting."
-            exit 1
-          fi
+        if [ $? -ne 0 ]; then
+          echo "Pushing formatting changes to remote failed; aborting."
+          exit 1
         fi
-      displayName: Run CSharpier formatting
-      workingDirectory: $(System.DefaultWorkingDirectory)
+      fi
+    displayName: Run formatting
+    workingDirectory: $(System.DefaultWorkingDirectory)
 
 # - script: |
 #     versionNumber="$(git show -s --format=%s)"
