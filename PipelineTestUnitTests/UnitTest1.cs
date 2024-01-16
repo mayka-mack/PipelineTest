@@ -8,9 +8,7 @@ namespace PipelineTestUnitTests
         [Fact]
         public void Test1()
         {
-            Assert.Equal(
-                "Hello, World!",
-                TestFunctions.HelloWorld());
+            Assert.Equal("Hello, World!", TestFunctions.HelloWorld());
         }
     }
 }
