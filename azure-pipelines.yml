@@ -85,8 +85,8 @@ jobs:
         echo "##[command]git commit -m \"$GITFORMATCOMMITMESSAGE\""
         git commit -m "$GITFORMATCOMMITMESSAGE"
 
-        echo "##[command]git push --set-upstream origin \"$BRANCHNAME\""
-        git push --set-upstream origin "$BRANCHNAME"
+        echo "##[command]git push"
+        git push
 
         if [ $? -ne 0 ]; then
           echo "Pushing formatting changes to remote failed; aborting."
