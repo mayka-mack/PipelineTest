@@ -46,9 +46,18 @@ stages:
       fetchTags: true
       persistCredentials: true
 
+    - script: |
+        echo "##[section]Setting Git username and email for pipeline"
+        echo "##[command]git config --local user.email pipeline@pipeline.com"
+        git config --local user.email pipeline@pipeline.com
+        echo "##[command]git config --local user.name \"Pipeline\""
+        git config --local user.name "Pipeline"
+      displayName: Set Git username/email for pipeline
+      workingDirectory: $(System.DefaultWorkingDirectory)
+
 - stage: PullRequest
   displayName: 'Run PR checks'
-  # condition: eq(variables['Build.Reason'], 'PullRequest')
+  #condition: eq(variables['Build.Reason'], 'PullRequest')
   jobs:
   - job: PullRequest
     displayName: 'PR job'
@@ -60,19 +69,33 @@ stages:
         command: 'custom'
         custom: 'tool'
         arguments: 'restore'
+    
+    - script: |
+        echo "##[section]Running CSharpier formatting"
+        echo "##[command]dotnet csharpier ."
+        dotnet csharpier .
 
-    - task: DotNetCoreCLI@2
-      displayName: Check formatting
-      inputs:
-        command: 'custom'
-        custom: 'csharpier'
-        arguments: '--check .'
+        if [ $? -ne 0 ]; then
+          echo "Formatting failed; aborting."
+          exit 1
+        fi
 
-    # - script: |
-    #     echo "$BUILD_REASON"
-    #   displayName: Check formatting on pull request
-    #   workingDirectory: $(System.DefaultWorkingDirectory)
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "One or more files were formatted by CSharpier; committing changes."
 
+          echo "##[command]git commit -m \"Format files with CSharpier\""
+          #git commit -m "Format files with CSharpier"
+
+          #echo "##[command]git push -set-upstream origin \"$BRANCHNAME\""
+          #git push -set-upstream origin "$BRANCHNAME"
+
+          #if [ $? -ne 0 ]; then
+          #  echo "Pushing formatting changes to remote failed; aborting."
+          #  exit 1
+          #fi
+        fi
+      displayName: Run CSharpier formatting
+      workingDirectory: $(System.DefaultWorkingDirectory)
 
 # - script: |
 #     versionNumber="$(git show -s --format=%s)"
