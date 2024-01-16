@@ -1,12 +1,12 @@
-  # Starter pipeline
+# Starter pipeline
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
 variables:
   gitPipelineUser: 'Azure Pipelines'
-  gitPipelineEmail: 'pipeline@azure.com'
-  gitFormatCommitMessage: 'Format files'
+  gitPipelineEmail: 'pipelines@azure.com'
+  gitFormatCommitMessage: 'Format solution'
   # Get true branch name -- cannot use Build.SourceBranchName due to / in the branch name
   ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/') }}:
     branchName: $[ replace(variables['Build.SourceBranch'], 'refs/heads/', '') ]
@@ -31,7 +31,11 @@ pool:
 jobs:
 - job: PullRequest
   displayName: 'Run PR Checks'
-  condition: eq(variables['Build.Reason'], 'PullRequest')
+  # Only run PR checks if merging into development branch
+  condition: >
+    and(
+        eq(variables['$System.PullRequest.targetBranchName'], 'development'),
+        eq(variables['Build.Reason'], 'PullRequest'))
   steps:
   - checkout: self
     fetchDepth: 0
@@ -137,7 +141,7 @@ jobs:
           fi
       fi
     displayName: Run formatting
-    condition: eq(variables.wasFormatted, false)
+    condition: and(succeeded(), eq(variables.wasFormatted, false))
     workingDirectory: $(System.DefaultWorkingDirectory)
 
 # - script: |
