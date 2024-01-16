@@ -4,7 +4,7 @@
 # https://aka.ms/yaml
 
 variables:
-  gitPipelineUser: 'Azure Pipeline'
+  gitPipelineUser: 'Azure Pipelines'
   gitPipelineEmail: 'pipeline@azure.com'
   gitFormatCommitMessage: 'Format files'
   # Get true branch name -- cannot use Build.SourceBranchName due to / in the branch name
