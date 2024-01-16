@@ -67,12 +67,16 @@ jobs:
       echo "##[section]Setting \"wasFormatted\" pipeline variable"
 
       if [ $lastCommit == "$GITPIPELINEEMAIL - $GITFORMATCOMMITMESSAGE" ]; then
-          echo "##[command]## vso[task.setvariable variable=wasFormatted;]true"
+          echo "##[command]# #vso[task.setvariable variable=wasFormatted;]true"
+          echo "##[section]PRINT 1"
           echo "##vso[task.setvariable variable=wasFormatted;]true"
+          echo "##[section]PRINT 2"
+
       else
-          command="vso[task.setvariable variable=wasFormatted;]false"
-          echo "##[command]## vso[task.setvariable variable=wasFormatted;]false"
+          echo "##[command]# #vso[task.setvariable variable=wasFormatted;]false"
+          echo "##[section]PRINT 3"
           echo "##vso[task.setvariable variable=wasFormatted;]false"
+          echo "##[section]PRINT 4"
       fi
     displayName: Check if last commit came from formatter
     workingDirectory: $(System.DefaultWorkingDirectory)
