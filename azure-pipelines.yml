@@ -34,7 +34,7 @@ jobs:
   # Only run PR checks if merging into development branch
   condition: >
     and(
-        eq(variables['$System.PullRequest.targetBranchName'], 'development'),
+        eq(variables['System.PullRequest.targetBranchName'], 'development'),
         eq(variables['Build.Reason'], 'PullRequest'))
   steps:
   - checkout: self
