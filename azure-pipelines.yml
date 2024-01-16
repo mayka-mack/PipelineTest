@@ -56,6 +56,30 @@ jobs:
       custom: 'tool'
       arguments: 'restore'
 
+  # With pull request triggers, there will be an additional commit for a merge;
+  # we can discard this commit so it will not appear in the history if we make changes
+  # Note: to be double sure the last commit is not a true commit, also validate
+  # the commit message via Regex and checkout the specific hash instead of HEAD^
+  - script: |
+      lastCommitMessage="$(git show -s --format=%s)"
+      regex="Merge ([a-f0-9]{40}) into [a-f0-9]{40}"
+
+      if [[ $lastCommitMessage =~ $regex ]]; then
+          lastCommitHash="${BASH_REMATCH[1]}"
+          echo "Last commit hash is $lastCommit"
+          echo "##[command]git checkout \"$lastCommitHash\""
+          git checkout "$lastCommitHash"
+
+          if [ $? -ne 0 ]; then
+              echo "Checkout failed; aborting."
+              exit 1
+          fi
+      else
+          echo "Last commit is true commit"
+      fi
+    displayName: Checkout last true commit
+    workingDirectory: $(System.DefaultWorkingDirectory)
+
   - script: |
       echo "##[section]Checking last commit"
 
@@ -85,38 +109,38 @@ jobs:
       dotnet csharpier .
 
       if [ $? -ne 0 ]; then
-        echo "CSharpier formatting failed; aborting."
-        exit 1
+          echo "CSharpier formatting failed; aborting."
+          exit 1
       fi
 
       echo "##[command]dotnet xstyler --recursive --directory . --config ./Settings.XamlStyler"
       dotnet xstyler --recursive --directory . --config ./Settings.XamlStyler
 
       if [ $? -ne 0 ]; then
-        echo "Xaml Styler formatting failed; aborting."
-        exit 1
+          echo "Xaml Styler formatting failed; aborting."
+          exit 1
       fi
 
       if [ -n "$(git status --porcelain)" ]; then
-        echo "Committing formatting changes."
-        
-        echo "##[command]git add -A"
-        git add -A
+          echo "Committing formatting changes."
 
-        echo "PRINT 2"
-        git show -s
-        echo "##[command]git commit -m \"$GITFORMATCOMMITMESSAGE\""
-        git commit -m "$GITFORMATCOMMITMESSAGE"
+          echo "##[command]git add -A"
+          git add -A
 
-        echo "PRINT 3"
-        git show -s
-        echo "##[command]git push origin HEAD:\"$BRANCHNAME\""
-        git push origin HEAD:"$BRANCHNAME"
+          echo "PRINT 2"
+          git show -s
+          echo "##[command]git commit -m \"$GITFORMATCOMMITMESSAGE\""
+          git commit -m "$GITFORMATCOMMITMESSAGE"
 
-        if [ $? -ne 0 ]; then
-          echo "Pushing formatting changes to remote failed; aborting."
-          exit 1
-        fi
+          echo "PRINT 3"
+          git show -s
+          echo "##[command]git push origin HEAD:\"$BRANCHNAME\""
+          git push origin HEAD:"$BRANCHNAME"
+
+          if [ $? -ne 0 ]; then
+              echo "Pushing formatting changes to remote failed; aborting."
+              exit 1
+          fi
       fi
     displayName: Run formatting
     condition: eq(variables.wasFormatted, false)
