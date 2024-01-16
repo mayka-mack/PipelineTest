@@ -41,7 +41,8 @@ steps:
   persistCredentials: true
 
 - script: |
-    echo "$BUILDREASON"
+    echo "$BUILD.REASON"
+    echo "$BRANCHNAME"
   displayName: Get build reason
   workingDirectory: $(System.DefaultWorkingDirectory)
 
