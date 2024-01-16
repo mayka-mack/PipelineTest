@@ -56,8 +56,8 @@ stages:
       workingDirectory: $(System.DefaultWorkingDirectory)
 
 - stage: PullRequest
-  displayName: 'Run PR checks'
-  #condition: eq(variables['Build.Reason'], 'PullRequest')
+  displayName: 'Run PR Checks'
+  condition: eq(variables['Build.Reason'], 'PullRequest')
   jobs:
   - job: PullRequest
     displayName: 'PR job'
@@ -83,16 +83,16 @@ stages:
         if [ -n "$(git status --porcelain)" ]; then
           echo "One or more files were formatted by CSharpier; committing changes."
 
-          echo "##[command]git commit -m \"Format files with CSharpier\""
-          #git commit -m "Format files with CSharpier"
+          echo "##[command]git commit -m \"Format files\""
+          git commit -m "Format files"
 
-          #echo "##[command]git push -set-upstream origin \"$BRANCHNAME\""
-          #git push -set-upstream origin "$BRANCHNAME"
+          echo "##[command]git push -set-upstream origin \"$BRANCHNAME\""
+          git push -set-upstream origin "$BRANCHNAME"
 
-          #if [ $? -ne 0 ]; then
-          #  echo "Pushing formatting changes to remote failed; aborting."
-          #  exit 1
-          #fi
+          if [ $? -ne 0 ]; then
+            echo "Pushing formatting changes to remote failed; aborting."
+            exit 1
+          fi
         fi
       displayName: Run CSharpier formatting
       workingDirectory: $(System.DefaultWorkingDirectory)
